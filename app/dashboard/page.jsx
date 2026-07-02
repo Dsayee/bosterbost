@@ -24,6 +24,13 @@ const portalSections = [
   { id: "support", label: "Support" },
 ];
 
+const sectionPaths = {
+  overview: "/dashboard",
+  wallet: "/dashboard/wallet",
+  orders: "/dashboard/orders",
+  support: "/dashboard/support",
+};
+
 const pawaPayCountries = [
   { code: "RWA", label: "Rwanda" },
   { code: "KEN", label: "Kenya" },
@@ -66,7 +73,7 @@ const readAttachment = (file) =>
     reader.readAsDataURL(file);
   });
 
-export default function CustomerDashboard() {
+export function CustomerDashboard({ initialSection = "overview" }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -88,7 +95,7 @@ export default function CustomerDashboard() {
   const [supportOrderFilter, setSupportOrderFilter] = useState("");
   const [supportStatusFilter, setSupportStatusFilter] = useState("All");
   const [supportDateFilter, setSupportDateFilter] = useState("");
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState(initialSection);
   const [walletView, setWalletView] = useState("fund");
   const [ordersView, setOrdersView] = useState("new");
   const [supportView, setSupportView] = useState("new");
@@ -101,6 +108,9 @@ export default function CustomerDashboard() {
     if (section === "orders" && view) setOrdersView(view);
     if (section === "support" && view) setSupportView(view);
     if (typeof window !== "undefined") {
+      if (sectionPaths[section] && sectionPaths[section] !== window.location.pathname) {
+        router.push(sectionPaths[section]);
+      }
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -210,6 +220,10 @@ export default function CustomerDashboard() {
     const sync = setInterval(refresh, 10000);
     return () => clearInterval(sync);
   }, []);
+
+  useEffect(() => {
+    setActiveSection(initialSection);
+  }, [initialSection]);
 
   useEffect(() => {
     const firstModule = platformModules[0];
@@ -384,7 +398,13 @@ export default function CustomerDashboard() {
   );
 
   return (
-    <DashboardShell title="Organic growth dashboard" eyebrow="Customer portal" active="customer" actions={actions} showAdmin={user?.isAdmin}>
+    <DashboardShell
+      title="Organic growth dashboard"
+      eyebrow="Customer portal"
+      active={activeSection === "overview" ? "customer" : activeSection}
+      actions={actions}
+      showAdmin={user?.isAdmin}
+    >
       {isLoading ? (
         <section className="panel-card">
           <span className="eyebrow">Checking session</span>
@@ -393,6 +413,7 @@ export default function CustomerDashboard() {
         </section>
       ) : (
         <>
+          {activeSection === "overview" ? (
           <section className="panel-card portal-welcome">
             <div>
               <span className="eyebrow">Natural growth workspace</span>
@@ -416,6 +437,7 @@ export default function CustomerDashboard() {
               ))}
             </div>
           </section>
+          ) : null}
 
           {notification ? (
             <section className="notification-banner">
@@ -980,4 +1002,8 @@ export default function CustomerDashboard() {
       )}
     </DashboardShell>
   );
+}
+
+export default function CustomerDashboardPage() {
+  return <CustomerDashboard initialSection="overview" />;
 }

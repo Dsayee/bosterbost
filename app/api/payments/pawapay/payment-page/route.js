@@ -62,7 +62,7 @@ export async function POST(request) {
       payerProvider: country,
     });
 
-    const returnUrl = `${appBaseUrl(request)}/dashboard?payment=pawapay&depositId=${encodeURIComponent(deposit.providerDepositId)}`;
+    const returnUrl = `${appBaseUrl(request)}/dashboard/wallet?payment=pawapay&depositId=${encodeURIComponent(deposit.providerDepositId)}`;
     const pawaPayResponse = await initiatePawaPayPaymentPage({
       depositId: deposit.providerDepositId,
       amount,

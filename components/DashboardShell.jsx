@@ -15,7 +15,16 @@ export default function DashboardShell({ title, eyebrow, active, actions, showAd
         </Link>
         <nav aria-label="Dashboard navigation">
           <Link className={active === "customer" ? "active" : ""} href="/dashboard">
-            Customer Dashboard
+            Overview
+          </Link>
+          <Link className={active === "wallet" ? "active" : ""} href="/dashboard/wallet">
+            Add Funds
+          </Link>
+          <Link className={active === "orders" ? "active" : ""} href="/dashboard/orders">
+            Place Order
+          </Link>
+          <Link className={active === "support" ? "active" : ""} href="/dashboard/support">
+            Support
           </Link>
           {showAdmin ? (
             <Link className={active === "admin" ? "active" : ""} href="/admin">
