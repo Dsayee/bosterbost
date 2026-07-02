@@ -21,5 +21,6 @@ styles.css
 
 # Local exports and scratch files with possible private user data.
 cloudflare-d1-data.sql
+backup-before-user-cleanup-*.sql
 cookies.txt
 q-dev-chat-*.md

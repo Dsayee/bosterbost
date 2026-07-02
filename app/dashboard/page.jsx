@@ -100,6 +100,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const [ordersView, setOrdersView] = useState("new");
   const [supportView, setSupportView] = useState("new");
   const [notification, setNotification] = useState("");
+  const [showWhatsappPrompt, setShowWhatsappPrompt] = useState(false);
   const supportSignatureRef = useRef("");
 
   const openSection = (section, view = "") => {
@@ -224,6 +225,17 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   useEffect(() => {
     setActiveSection(initialSection);
   }, [initialSection]);
+
+  useEffect(() => {
+    if (isLoading || !user || typeof window === "undefined") return;
+    const promptKey = `bb_whatsapp_prompt_seen_${user.id}`;
+    if (window.localStorage.getItem(promptKey)) return;
+
+    setShowWhatsappPrompt(true);
+    window.localStorage.setItem(promptKey, "1");
+    const timer = window.setTimeout(() => setShowWhatsappPrompt(false), 10000);
+    return () => window.clearTimeout(timer);
+  }, [isLoading, user]);
 
   useEffect(() => {
     const firstModule = platformModules[0];
@@ -441,6 +453,23 @@ export function CustomerDashboard({ initialSection = "overview" }) {
               <button type="button" onClick={() => setNotification("")}>
                 Dismiss
               </button>
+            </section>
+          ) : null}
+
+          {showWhatsappPrompt ? (
+            <section className="whatsapp-prompt" role="status" aria-live="polite">
+              <div>
+                <strong>Join our WhatsApp Channel</strong>
+                <p>Receive the latest updates, service announcements, and platform notices.</p>
+              </div>
+              <div className="whatsapp-prompt-actions">
+                <a className="btn btn-secondary" href="https://whatsapp.com/channel/0029VbDDAEfA89MdzGunyD3I" target="_blank" rel="noreferrer">
+                  Join Channel
+                </a>
+                <button className="btn btn-light" type="button" onClick={() => setShowWhatsappPrompt(false)}>
+                  Close
+                </button>
+              </div>
             </section>
           ) : null}
 
