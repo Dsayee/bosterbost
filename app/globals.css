@@ -175,6 +175,24 @@ h3 {
   font-size: 0.95rem;
 }
 
+.nav-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  padding: 10px;
+  cursor: pointer;
+}
+
+.nav-toggle span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--navy);
+}
+
 .btn {
   display: inline-flex;
   align-items: center;
@@ -1541,5 +1559,233 @@ td strong {
     align-items: flex-start;
     gap: 8px;
     padding: 10px 0;
+  }
+}
+
+/* Mobile and tablet app refinements */
+@media (max-width: 860px) {
+  .nav-shell {
+    min-height: auto;
+    flex-wrap: wrap;
+    padding: 12px 0;
+  }
+
+  .nav-toggle {
+    display: inline-grid;
+    align-content: center;
+    gap: 5px;
+  }
+
+  .nav-links {
+    display: none;
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links a {
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .utility-right {
+    margin-left: auto;
+  }
+
+  .hero {
+    min-height: auto;
+  }
+
+  .hero-inner {
+    gap: 28px;
+  }
+
+  .app-sidebar {
+    position: sticky;
+    top: 0;
+    z-index: 15;
+    height: auto;
+    padding: 14px 16px;
+  }
+
+  .app-brand {
+    margin-bottom: 12px;
+  }
+
+  .app-sidebar nav {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-sidebar nav a {
+    flex: 0 0 auto;
+    min-height: 42px;
+    white-space: nowrap;
+  }
+
+  .app-main {
+    padding: 20px 16px;
+  }
+
+  .app-topbar h1 {
+    margin-bottom: 0;
+  }
+
+  .portal-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .workspace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  h1 {
+    font-size: clamp(2.35rem, 13vw, 3.4rem);
+    line-height: 1;
+  }
+
+  h2 {
+    font-size: clamp(1.75rem, 9vw, 2.35rem);
+    line-height: 1.08;
+  }
+
+  .utility-inner {
+    align-items: stretch;
+  }
+
+  .utility-right {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .utility-right .utility-link,
+  .utility-right .btn {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .brand strong,
+  .app-brand strong {
+    overflow-wrap: anywhere;
+  }
+
+  .hero-actions,
+  .inline-actions,
+  .topbar-actions {
+    width: 100%;
+  }
+
+  .hero-actions .btn,
+  .inline-actions .btn,
+  .topbar-actions .btn {
+    width: 100%;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .order-form {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-heading .status-pill {
+    align-self: flex-start;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .filter-row {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .filter-row label {
+    min-width: 0;
+  }
+
+  .table-wrap {
+    margin-inline: -2px;
+  }
+
+  table {
+    min-width: 620px;
+  }
+
+  th,
+  td {
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 460px) {
+  .container {
+    width: min(100% - 20px, var(--max-width));
+  }
+
+  .section,
+  .section-band {
+    padding: 48px 0;
+  }
+
+  .app-main,
+  .app-sidebar,
+  .panel-card,
+  .metric-card,
+  .auth-panel,
+  .step-card,
+  .feature-card,
+  .price-card {
+    padding: 14px;
+  }
+
+  .app-brand span,
+  .brand-mark {
+    width: 38px;
+    height: 38px;
+  }
+
+  .app-topbar {
+    gap: 12px;
+  }
+
+  .language-selector {
+    align-items: stretch;
+  }
+
+  .language-selector select,
+  .currency-switcher select,
+  .btn,
+  .order-form input,
+  .order-form select,
+  .order-form textarea {
+    min-height: 46px;
+  }
+
+  .support-thread {
+    max-height: 58vh;
+  }
+
+  table {
+    min-width: 560px;
+  }
+
+  .platforms-list span {
+    flex-basis: 100%;
   }
 }
