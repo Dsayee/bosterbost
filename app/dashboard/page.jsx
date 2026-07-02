@@ -136,8 +136,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const estimateRwf = (Number(quantity || 0) / 1000) * selectedService.priceRwf;
   const displayEstimate = formatMoney(fromRwf(estimateRwf, currency), currency);
   const displayWallet = formatMoney(fromRwf(user?.walletRwf || 0, currency), currency);
-  const minimumDepositInCurrency = fromRwf(MINIMUM_DEPOSIT_RWF, currency);
-  const minimumDepositLabel = formatMoney(minimumDepositInCurrency, currency);
+  const minimumDepositLabel = formatMoney(MINIMUM_DEPOSIT_RWF, "RWF");
   const filteredSupportTickets = useMemo(() => {
     const orderQuery = supportOrderFilter.trim().toLowerCase();
     return supportTickets.filter((ticket) => {
@@ -574,7 +573,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
               <form className="order-form" onSubmit={handleFunding}>
                 <label>
                   Amount
-                  <input name="amount" type="number" min={minimumDepositInCurrency} step="0.01" placeholder={`Minimum ${minimumDepositLabel}`} required />
+                  <input name="amount" type="number" min="0.01" step="any" placeholder={`Minimum ${minimumDepositLabel} equivalent`} required />
                 </label>
                 <label>
                   Currency
@@ -604,7 +603,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                   Continue to PawaPay Secure Payment
                 </button>
               </form>
-              <p className="form-note">Minimum deposit: {minimumDepositLabel}.</p>
+              <p className="form-note">Minimum deposit: {minimumDepositLabel} or the same value in your selected currency.</p>
               <p className="form-message">
                 {fundMessage}
                 {pendingDepositId ? (
