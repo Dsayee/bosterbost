@@ -10,7 +10,7 @@ import {
   getMyOrders,
   getSupportTickets,
   getWallet,
-  initiatePawaPayDeposit,
+  initiatePawaPayPaymentPage,
   logout,
   replySupportTicket,
   submitOrder,
@@ -19,9 +19,24 @@ import { CURRENCIES, SERVICE_CATALOG, SERVICE_PLATFORMS, findService, formatMone
 
 const portalSections = [
   { id: "overview", label: "Overview" },
-  { id: "wallet", label: "Wallet" },
-  { id: "orders", label: "Orders" },
+  { id: "wallet", label: "Add Funds" },
+  { id: "orders", label: "Place Order" },
   { id: "support", label: "Support" },
+];
+
+const pawaPayCountries = [
+  { code: "RWA", label: "Rwanda" },
+  { code: "KEN", label: "Kenya" },
+  { code: "UGA", label: "Uganda" },
+  { code: "COD", label: "DR Congo" },
+  { code: "ZMB", label: "Zambia" },
+  { code: "SEN", label: "Senegal" },
+  { code: "BEN", label: "Benin" },
+  { code: "CIV", label: "Ivory Coast" },
+  { code: "CMR", label: "Cameroon" },
+  { code: "COG", label: "Congo" },
+  { code: "GAB", label: "Gabon" },
+  { code: "SLE", label: "Sierra Leone" },
 ];
 
 const formatDate = (isoDate) => {
@@ -74,8 +89,21 @@ export default function CustomerDashboard() {
   const [supportStatusFilter, setSupportStatusFilter] = useState("All");
   const [supportDateFilter, setSupportDateFilter] = useState("");
   const [activeSection, setActiveSection] = useState("overview");
+  const [walletView, setWalletView] = useState("fund");
+  const [ordersView, setOrdersView] = useState("new");
+  const [supportView, setSupportView] = useState("new");
   const [notification, setNotification] = useState("");
   const supportSignatureRef = useRef("");
+
+  const openSection = (section, view = "") => {
+    setActiveSection(section);
+    if (section === "wallet" && view) setWalletView(view);
+    if (section === "orders" && view) setOrdersView(view);
+    if (section === "support" && view) setSupportView(view);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
 
   const platformServices = useMemo(() => {
     return SERVICE_CATALOG.filter((service) => service.platform === selectedPlatform);
@@ -167,6 +195,18 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     refresh();
+    const params = new URLSearchParams(window.location.search);
+    const returnedDepositId = params.get("depositId");
+    if (returnedDepositId) {
+      setPendingDepositId(returnedDepositId);
+      setFundMessage("Returned from PawaPay. Checking payment status...");
+      setActiveSection("wallet");
+      setWalletView("history");
+      checkPawaPayDeposit(returnedDepositId)
+        .then((result) => setFundMessage(`PawaPay status: ${result.status || result.deposit?.status || "processing"}.`))
+        .then(refresh)
+        .catch((error) => setFundMessage(error.message));
+    }
     const sync = setInterval(refresh, 10000);
     return () => clearInterval(sync);
   }, []);
@@ -206,16 +246,17 @@ export default function CustomerDashboard() {
     const depositCurrency = String(formData.get("currency"));
 
     try {
-      const result = await initiatePawaPayDeposit({
+      setFundMessage("Creating secure PawaPay checkout...");
+      const result = await initiatePawaPayPaymentPage({
         amount,
         currency: depositCurrency,
         phoneNumber: String(formData.get("phoneNumber") || "").trim(),
-        provider: String(formData.get("provider") || "").trim(),
+        country: String(formData.get("country") || "RWA"),
       });
-      setPendingDepositId(result.deposit.providerDepositId);
-      setFundMessage(`${result.message} Deposit ID: ${result.deposit.providerDepositId}`);
-      form.reset();
-      await refresh();
+      if (!result.redirectUrl) {
+        throw new Error("PawaPay did not return a secure checkout link.");
+      }
+      window.location.href = result.redirectUrl;
     } catch (error) {
       setFundMessage(error.message);
     }
@@ -324,10 +365,10 @@ export default function CustomerDashboard() {
           ))}
         </select>
       </label>
-      <button className="btn btn-primary" type="button" onClick={() => setActiveSection("wallet")}>
+      <button className="btn btn-primary" type="button" onClick={() => openSection("wallet", "fund")}>
         Add Funds
       </button>
-      <button className="btn btn-secondary" type="button" onClick={() => setActiveSection("orders")}>
+      <button className="btn btn-secondary" type="button" onClick={() => openSection("orders", "new")}>
         Place Order
       </button>
       <button
@@ -366,7 +407,7 @@ export default function CustomerDashboard() {
                   key={section.id}
                   className={activeSection === section.id ? "active" : ""}
                   type="button"
-                  onClick={() => setActiveSection(section.id)}
+                  onClick={() => openSection(section.id)}
                   role="tab"
                   aria-selected={activeSection === section.id}
                 >
@@ -390,32 +431,32 @@ export default function CustomerDashboard() {
             <article className="metric-card">
               <span>Current user</span>
               <strong>{user?.name || "Guest"}</strong>
-              <p>{user ? `${user.role} organic growth account - ${user.email}` : "Please log in to use the panel."}</p>
+              <p>{user ? `${user.role} account` : "Please log in to use the panel."}</p>
             </article>
             <article className="metric-card">
               <span>Wallet balance</span>
               <strong>{displayWallet}</strong>
-              <p>{formatMoney(user?.walletRwf || 0, "RWF")} held as source balance.</p>
+              <p>Available for orders.</p>
             </article>
             <article className="metric-card">
               <span>My order requests</span>
               <strong>{orders.length}</strong>
-              <p>Requests submitted from this account.</p>
+              <p>All campaigns.</p>
             </article>
             <article className="metric-card">
               <span>Support tickets</span>
               <strong>{supportTickets.length}</strong>
-              <p>Messages shared with Boster Bost admin.</p>
+              <p>Open and closed tickets.</p>
             </article>
             <article className="metric-card quick-actions-card">
               <span>Quick actions</span>
               <strong>Start here</strong>
-              <p>Fund your wallet or place an order in one click.</p>
+              <p>Choose one action.</p>
               <div className="inline-actions">
-                <button className="btn btn-primary" type="button" onClick={() => setActiveSection("wallet")}>
+                <button className="btn btn-primary" type="button" onClick={() => openSection("wallet", "fund")}>
                   Add Funds
                 </button>
-                <button className="btn btn-secondary" type="button" onClick={() => setActiveSection("orders")}>
+                <button className="btn btn-secondary" type="button" onClick={() => openSection("orders", "new")}>
                   Place Order
                 </button>
               </div>
@@ -424,15 +465,39 @@ export default function CustomerDashboard() {
           ) : null}
 
           {["wallet", "orders"].includes(activeSection) ? (
-          <section className="workspace-grid">
+          <>
+          <section className="panel-card section-switcher">
             {activeSection === "wallet" ? (
+              <>
+                <button className={walletView === "fund" ? "active" : ""} type="button" onClick={() => setWalletView("fund")}>
+                  Add Funds
+                </button>
+                <button className={walletView === "history" ? "active" : ""} type="button" onClick={() => setWalletView("history")}>
+                  Deposits & Transactions
+                </button>
+              </>
+            ) : (
+              <>
+                <button className={ordersView === "new" ? "active" : ""} type="button" onClick={() => setOrdersView("new")}>
+                  Place Order
+                </button>
+                <button className={ordersView === "history" ? "active" : ""} type="button" onClick={() => setOrdersView("history")}>
+                  Order History
+                </button>
+              </>
+            )}
+          </section>
+
+          <section className="single-workspace">
+            {activeSection === "wallet" ? (
+            walletView === "fund" ? (
             <article className="panel-card">
               <div className="panel-heading">
                 <div>
-                  <span className="eyebrow">Wallet</span>
-                  <h2>Add funds</h2>
+                  <span className="eyebrow">Secure checkout</span>
+                  <h2>Add funds with PawaPay</h2>
                 </div>
-                <span className="status-pill">Multi-currency</span>
+                <span className="status-pill">Redirects to PawaPay</span>
               </div>
               <form className="order-form" onSubmit={handleFunding}>
                 <label>
@@ -450,15 +515,21 @@ export default function CustomerDashboard() {
                   </select>
                 </label>
                 <label>
-                  Mobile money phone
-                  <input name="phoneNumber" type="tel" placeholder="250783456789" required />
+                  Payment country
+                  <select name="country" defaultValue="RWA">
+                    {pawaPayCountries.map((country) => (
+                      <option key={country.code} value={country.code}>
+                        {country.label}
+                      </option>
+                    ))}
+                  </select>
                 </label>
                 <label>
-                  Provider
-                  <input name="provider" type="text" placeholder="Optional, e.g. MTN_MOMO_RWA" />
+                  Phone number
+                  <input name="phoneNumber" type="tel" placeholder="Optional" />
                 </label>
                 <button className="btn btn-primary full-field" type="submit">
-                  Pay with PawaPay
+                  Continue to PawaPay Secure Payment
                 </button>
               </form>
               <p className="form-message">
@@ -470,9 +541,101 @@ export default function CustomerDashboard() {
                 ) : null}
               </p>
             </article>
+            ) : (
+            <article className="panel-card">
+              <div className="panel-heading">
+                <div>
+                  <span className="eyebrow">Wallet</span>
+                  <h2>Deposits & transactions</h2>
+                </div>
+                <button className="btn btn-secondary" type="button" onClick={refresh}>
+                  Refresh
+                </button>
+              </div>
+              <div className="compact-stack">
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Deposit ID</th>
+                        <th>Amount</th>
+                        <th>Country</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {paymentDeposits.length ? (
+                        paymentDeposits.map((deposit) => (
+                          <tr key={deposit.id}>
+                            <td>
+                              <strong>{deposit.providerDepositId}</strong>
+                            </td>
+                            <td>
+                              <strong>{formatMoney(deposit.originalAmount, deposit.originalCurrency)}</strong>
+                              <br />
+                              {formatMoney(deposit.amountRwf, "RWF")}
+                            </td>
+                            <td>{deposit.payerProvider || "-"}</td>
+                            <td>
+                              <span className={`order-status ${deposit.status === "COMPLETED" ? "" : "pending-status"}`}>{deposit.status}</span>
+                              {deposit.status !== "COMPLETED" ? (
+                                <button className="inline-action" type="button" onClick={() => setPendingDepositId(deposit.providerDepositId)}>
+                                  Select
+                                </button>
+                              ) : null}
+                            </td>
+                            <td>{formatDate(deposit.createdAt)}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="5">No PawaPay deposit requests yet.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                        <th>Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {transactions.length ? (
+                        transactions.map((transaction) => (
+                          <tr key={transaction.id}>
+                            <td>
+                              <span className="order-status">{transaction.type}</span>
+                            </td>
+                            <td>
+                              <strong>{transactionAmount(transaction)}</strong>
+                              <br />
+                              {formatMoney(transaction.amountRwf, "RWF")}
+                            </td>
+                            <td>{transaction.description}</td>
+                            <td>{formatDate(transaction.createdAt)}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan="4">No wallet transactions yet.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </article>
+            )
             ) : null}
 
-            {activeSection === "orders" ? (
+            {activeSection === "orders" && ordersView === "new" ? (
             <article className="panel-card">
               <div className="panel-heading">
                 <div>
@@ -560,78 +723,19 @@ export default function CustomerDashboard() {
               <p className="form-message">
                 {message}
                 {message.includes("Insufficient wallet balance") ? (
-                  <button className="inline-action" type="button" onClick={() => setActiveSection("wallet")}>
+                  <button className="inline-action" type="button" onClick={() => openSection("wallet", "fund")}>
                     Add Funds
                   </button>
                 ) : null}
               </p>
             </article>
             ) : null}
-
-            {activeSection === "wallet" ? (
-            <article className="panel-card">
-              <div className="panel-heading">
-                <div>
-                  <span className="eyebrow">PawaPay</span>
-                  <h2>Deposit requests</h2>
-                </div>
-                <button className="btn btn-secondary" type="button" onClick={refresh}>
-                  Refresh
-                </button>
-              </div>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Deposit ID</th>
-                      <th>Amount</th>
-                      <th>Phone</th>
-                      <th>Provider</th>
-                      <th>Status</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {paymentDeposits.length ? (
-                      paymentDeposits.map((deposit) => (
-                        <tr key={deposit.id}>
-                          <td>
-                            <strong>{deposit.providerDepositId}</strong>
-                          </td>
-                          <td>
-                            <strong>{formatMoney(deposit.originalAmount, deposit.originalCurrency)}</strong>
-                            <br />
-                            {formatMoney(deposit.amountRwf, "RWF")}
-                          </td>
-                          <td>{deposit.payerPhone || "-"}</td>
-                          <td>{deposit.payerProvider || "-"}</td>
-                          <td>
-                            <span className={`order-status ${deposit.status === "COMPLETED" ? "" : "pending-status"}`}>{deposit.status}</span>
-                            {deposit.status !== "COMPLETED" ? (
-                              <button className="inline-action" type="button" onClick={() => setPendingDepositId(deposit.providerDepositId)}>
-                                Select
-                              </button>
-                            ) : null}
-                          </td>
-                          <td>{formatDate(deposit.createdAt)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="6">No PawaPay deposit requests yet.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </article>
-            ) : null}
           </section>
+          </>
           ) : null}
 
-          {["wallet", "orders"].includes(activeSection) ? (
-          <section className="workspace-grid">
-            {activeSection === "orders" ? (
+          {activeSection === "orders" && ordersView === "history" ? (
+          <section className="single-workspace">
             <article className="panel-card">
               <div className="panel-heading">
                 <div>
@@ -712,57 +816,22 @@ export default function CustomerDashboard() {
                 </table>
               </div>
             </article>
-            ) : null}
-
-            {activeSection === "wallet" ? (
-            <article className="panel-card">
-              <div className="panel-heading">
-                <div>
-                  <span className="eyebrow">Wallet ledger</span>
-                  <h2>Recent transactions</h2>
-                </div>
-              </div>
-              <div className="table-wrap">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Type</th>
-                      <th>Amount</th>
-                      <th>Description</th>
-                      <th>Date</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {transactions.length ? (
-                      transactions.map((transaction) => (
-                        <tr key={transaction.id}>
-                          <td>
-                            <span className="order-status">{transaction.type}</span>
-                          </td>
-                          <td>
-                            <strong>{transactionAmount(transaction)}</strong>
-                            <br />
-                            {formatMoney(transaction.amountRwf, "RWF")}
-                          </td>
-                          <td>{transaction.description}</td>
-                          <td>{formatDate(transaction.createdAt)}</td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4">No wallet transactions yet.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </article>
-            ) : null}
           </section>
           ) : null}
 
           {activeSection === "support" ? (
-          <section className="workspace-grid">
+          <>
+          <section className="panel-card section-switcher">
+            <button className={supportView === "new" ? "active" : ""} type="button" onClick={() => setSupportView("new")}>
+              New Ticket
+            </button>
+            <button className={supportView === "messages" ? "active" : ""} type="button" onClick={() => setSupportView("messages")}>
+              Messages
+            </button>
+          </section>
+
+          <section className="single-workspace">
+            {supportView === "new" ? (
             <article className="panel-card">
               <div className="panel-heading">
                 <div>
@@ -804,7 +873,9 @@ export default function CustomerDashboard() {
               </form>
               <p className="form-message">{supportMessage}</p>
             </article>
+            ) : null}
 
+            {supportView === "messages" ? (
             <article className="panel-card">
               <div className="panel-heading">
                 <div>
@@ -901,7 +972,9 @@ export default function CustomerDashboard() {
                 <p className="hero-text">No support requests yet.</p>
               )}
             </article>
+            ) : null}
           </section>
+          </>
           ) : null}
         </>
       )}

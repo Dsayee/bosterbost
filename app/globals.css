@@ -633,6 +633,41 @@ h3 {
   background: var(--teal-dark);
 }
 
+.section-switcher {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+  box-shadow: none;
+}
+
+.section-switcher button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: #ffffff;
+  color: #344054;
+  padding: 0 14px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.section-switcher button.active {
+  border-color: rgba(8, 120, 111, 0.42);
+  color: #ffffff;
+  background: var(--teal-dark);
+}
+
+.single-workspace {
+  display: grid;
+  gap: 18px;
+}
+
+.compact-stack {
+  display: grid;
+  gap: 14px;
+}
+
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -1682,12 +1717,14 @@ td strong {
 
   .hero-actions,
   .inline-actions,
+  .section-switcher,
   .topbar-actions {
     width: 100%;
   }
 
   .hero-actions .btn,
   .inline-actions .btn,
+  .section-switcher button,
   .topbar-actions .btn {
     width: 100%;
   }
