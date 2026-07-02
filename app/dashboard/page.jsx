@@ -84,7 +84,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const [selectedPlatform, setSelectedPlatform] = useState(SERVICE_PLATFORMS[0]);
   const [selectedModule, setSelectedModule] = useState(SERVICE_CATALOG[0].module);
   const [serviceId, setServiceId] = useState(SERVICE_CATALOG[0].id);
-  const [quantity, setQuantity] = useState(1000);
+  const [quantity, setQuantity] = useState(100);
   const [message, setMessage] = useState("");
   const [fundMessage, setFundMessage] = useState("");
   const [pendingDepositId, setPendingDepositId] = useState("");
@@ -242,6 +242,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
 
   useEffect(() => {
     const currentQuantity = Number(quantity || 0);
+    if (quantity === "") return;
     if (currentQuantity < selectedServiceMin || currentQuantity > selectedServiceMax) {
       setQuantity(selectedServiceMin);
     }
@@ -314,7 +315,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       });
 
       form.reset();
-      setQuantity(1000);
+      setQuantity(selectedServiceMin);
       await refresh();
       setMessage(
         `Success. Order request ${order.orderId || order.id.slice(0, 8)} submitted and ${formatMoney(
@@ -379,12 +380,6 @@ export function CustomerDashboard({ initialSection = "overview" }) {
           ))}
         </select>
       </label>
-      <button className="btn btn-primary" type="button" onClick={() => openSection("wallet", "fund")}>
-        Add Funds
-      </button>
-      <button className="btn btn-secondary" type="button" onClick={() => openSection("orders", "new")}>
-        Place Order
-      </button>
       <button
         className="btn btn-light"
         type="button"
@@ -404,6 +399,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       active={activeSection === "overview" ? "customer" : activeSection}
       actions={actions}
       showAdmin={user?.isAdmin}
+      userName={user?.name}
     >
       {isLoading ? (
         <section className="panel-card">
@@ -483,28 +479,30 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                 </button>
               </div>
             </article>
+            <article className="metric-card quick-actions-card whatsapp-card">
+              <span>Updates</span>
+              <strong>WhatsApp Channel</strong>
+              <p>Join our WhatsApp Channel to receive the latest updates and announcements.</p>
+              <a className="btn btn-secondary" href="https://whatsapp.com/channel/0029VbDDAEfA89MdzGunyD3I" target="_blank" rel="noreferrer">
+                Join WhatsApp Channel
+              </a>
+            </article>
           </section>
           ) : null}
 
           {["wallet", "orders"].includes(activeSection) ? (
           <>
-          <section className="panel-card section-switcher">
+          <section className="panel-card section-switcher compact-switcher">
             {activeSection === "wallet" ? (
               <>
-                <button className={walletView === "fund" ? "active" : ""} type="button" onClick={() => setWalletView("fund")}>
-                  Add Funds
-                </button>
-                <button className={walletView === "history" ? "active" : ""} type="button" onClick={() => setWalletView("history")}>
-                  Deposits & Transactions
+                <button type="button" onClick={() => setWalletView(walletView === "fund" ? "history" : "fund")}>
+                  {walletView === "fund" ? "View Deposits & Transactions" : "Add Funds"}
                 </button>
               </>
             ) : (
               <>
-                <button className={ordersView === "new" ? "active" : ""} type="button" onClick={() => setOrdersView("new")}>
-                  Place Order
-                </button>
-                <button className={ordersView === "history" ? "active" : ""} type="button" onClick={() => setOrdersView("history")}>
-                  Order History
+                <button type="button" onClick={() => setOrdersView(ordersView === "new" ? "history" : "new")}>
+                  {ordersView === "new" ? "View Order History" : "Place Order"}
                 </button>
               </>
             )}
@@ -664,7 +662,6 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                   <span className="eyebrow">New organic-style order</span>
                   <h2>Submit campaign request</h2>
                 </div>
-                <span className="status-pill">{displayEstimate}</span>
               </div>
 
               <form className="order-form" onSubmit={handleSubmit}>
@@ -708,6 +705,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                     step="1"
                     value={quantity}
                     onChange={(event) => setQuantity(event.target.value)}
+                    onFocus={(event) => event.currentTarget.select()}
                     required
                   />
                 </label>
@@ -732,7 +730,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                 </label>
                 <label>
                   Estimated cost
-                  <input value={`${displayEstimate} (${formatMoney(estimateRwf, "RWF")})`} readOnly />
+                  <input value={displayEstimate} readOnly />
                 </label>
                 <label className="full-field">
                   Notes for admin

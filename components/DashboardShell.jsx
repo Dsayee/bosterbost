@@ -1,19 +1,35 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import DashboardTranslator from "./DashboardTranslator";
 import LanguageSelector from "./LanguageSelector";
 
-export default function DashboardShell({ title, eyebrow, active, actions, showAdmin = false, children }) {
+export default function DashboardShell({ title, eyebrow, active, actions, showAdmin = false, userName = "", children }) {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className="dashboard-body">
       <DashboardTranslator />
       <aside className="app-sidebar">
-        <Link className="app-brand" href="/">
-          <span>BB</span>
-          <strong>Boster Bost</strong>
-        </Link>
-        <nav aria-label="Dashboard navigation">
+        <div className="app-sidebar-head">
+          <Link className="app-brand" href="/dashboard">
+            <span>BB</span>
+            <strong>Boster Bost</strong>
+          </Link>
+          <button
+            className="dashboard-menu-toggle"
+            type="button"
+            aria-expanded={isMenuOpen}
+            aria-label="Open dashboard menu"
+            onClick={() => setIsMenuOpen((current) => !current)}
+          >
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+        </div>
+        <nav className={isMenuOpen ? "open" : ""} aria-label="Dashboard navigation" onClick={() => setIsMenuOpen(false)}>
           <Link className={active === "customer" ? "active" : ""} href="/dashboard">
             Overview
           </Link>
@@ -40,6 +56,7 @@ export default function DashboardShell({ title, eyebrow, active, actions, showAd
           <div>
             <span className="eyebrow">{eyebrow}</span>
             <h1>{title}</h1>
+            {userName ? <p className="signed-in-user">Signed in as {userName}</p> : null}
           </div>
           <div className="topbar-actions">
             <LanguageSelector />

@@ -1,5 +1,6 @@
 import { createSupportTicket, listSupportTicketsForUser } from "../../../lib/server/db";
 import { getCurrentUserFromRequest, json, unauthorized } from "../../../lib/server/http";
+import { notifyCustomerTicketReceived } from "../../../lib/server/notifications";
 
 export async function GET() {
   const user = await getCurrentUserFromRequest();
@@ -36,5 +37,6 @@ export async function POST(request) {
   }
 
   const ticket = await createSupportTicket(user.id, { subject, category, message, orderId, attachment });
+  await notifyCustomerTicketReceived(request.url, { customer: user, ticket }).catch(() => null);
   return json({ ticket }, 201);
 }

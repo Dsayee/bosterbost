@@ -48,6 +48,13 @@ input,
 select,
 textarea {
   font: inherit;
+  max-width: 100%;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
 }
 
 h1,
@@ -59,16 +66,18 @@ p {
 
 h1 {
   margin-bottom: 12px;
-  font-size: clamp(3.6rem, 8vw, 7.2rem);
-  line-height: 0.92;
+  font-size: clamp(2.65rem, 6.5vw, 5.6rem);
+  line-height: 0.98;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 h2 {
   margin-bottom: 16px;
-  font-size: clamp(2rem, 4vw, 3.35rem);
-  line-height: 1;
+  font-size: clamp(1.65rem, 3.5vw, 2.65rem);
+  line-height: 1.08;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 h3 {
@@ -510,6 +519,13 @@ h3 {
   background: var(--navy);
 }
 
+.app-sidebar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
 .app-brand {
   display: flex;
   align-items: center;
@@ -527,6 +543,27 @@ h3 {
   border-radius: var(--radius);
   color: var(--navy);
   background: var(--gold);
+}
+
+.dashboard-menu-toggle {
+  display: none;
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  place-items: center;
+  padding: 10px;
+}
+
+.dashboard-menu-toggle span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  margin: 3px auto;
+  border-radius: 999px;
+  background: #ffffff;
 }
 
 .app-sidebar nav {
@@ -549,6 +586,9 @@ h3 {
 
 .app-main {
   min-width: 0;
+  width: 100%;
+  max-width: 1240px;
+  margin: 0 auto;
   padding: 30px;
 }
 
@@ -565,7 +605,15 @@ h3 {
 }
 
 .app-topbar h1 {
-  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-size: clamp(1.65rem, 3vw, 2.45rem);
+  line-height: 1.08;
+}
+
+.signed-in-user {
+  margin: 6px 0 0;
+  color: var(--muted-ink);
+  font-size: 0.95rem;
+  font-weight: 800;
 }
 
 .topbar-actions {
@@ -658,6 +706,10 @@ h3 {
   background: var(--teal-dark);
 }
 
+.compact-switcher {
+  justify-content: flex-end;
+}
+
 .single-workspace {
   display: grid;
   gap: 18px;
@@ -677,6 +729,7 @@ h3 {
 
 .metric-card,
 .panel-card {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   background: var(--surface);
@@ -1058,8 +1111,22 @@ td strong {
     height: auto;
   }
 
+  .app-brand {
+    margin-bottom: 0;
+  }
+
+  .dashboard-menu-toggle {
+    display: grid;
+  }
+
   .app-sidebar nav {
+    display: none;
+    margin-top: 14px;
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .app-sidebar nav.open {
+    display: grid;
   }
 
   .dashboard-grid,
@@ -1105,6 +1172,16 @@ td strong {
   .topbar-actions,
   .language-selector,
   .language-selector select {
+    width: 100%;
+  }
+
+  .app-topbar {
+    text-align: center;
+  }
+
+  .app-topbar > div:first-child,
+  .panel-heading > div {
+    min-width: 0;
     width: 100%;
   }
 
@@ -1201,8 +1278,8 @@ td strong {
 
   .hero-copy h1,
   .app-topbar h1 {
-    font-size: clamp(2.15rem, 12vw, 3.2rem);
-    line-height: 1;
+    font-size: clamp(1.85rem, 10vw, 2.55rem);
+    line-height: 1.05;
   }
 
   .hero-tagline,
@@ -1654,17 +1731,21 @@ td strong {
   }
 
   .app-sidebar nav {
-    display: flex;
+    display: none;
+    grid-template-columns: 1fr;
     gap: 8px;
-    overflow-x: auto;
     padding-bottom: 2px;
-    -webkit-overflow-scrolling: touch;
+  }
+
+  .app-sidebar nav.open {
+    display: grid;
   }
 
   .app-sidebar nav a {
-    flex: 0 0 auto;
     min-height: 42px;
-    white-space: nowrap;
+    width: 100%;
+    white-space: normal;
+    text-align: center;
   }
 
   .app-main {
@@ -1686,13 +1767,13 @@ td strong {
 
 @media (max-width: 640px) {
   h1 {
-    font-size: clamp(2.35rem, 13vw, 3.4rem);
-    line-height: 1;
+    font-size: clamp(2rem, 11vw, 2.75rem);
+    line-height: 1.05;
   }
 
   h2 {
-    font-size: clamp(1.75rem, 9vw, 2.35rem);
-    line-height: 1.08;
+    font-size: clamp(1.45rem, 8vw, 2rem);
+    line-height: 1.12;
   }
 
   .utility-inner {
@@ -1758,6 +1839,7 @@ td strong {
 
   .table-wrap {
     margin-inline: -2px;
+    overflow-x: auto;
   }
 
   table {

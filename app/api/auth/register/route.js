@@ -28,8 +28,8 @@ export async function POST(request) {
         emailSent: emailDelivery.sent,
         emailMessage: emailDelivery.sent
           ? "Confirmation email sent. Please check your inbox."
-          : "Confirmation email was not sent. Use the local confirmation link or add SMTP settings.",
-        verificationUrl: emailDelivery.sent ? "" : verificationUrl,
+          : "Confirmation email could not be sent. Please contact support so we can verify your email delivery settings.",
+        verificationUrl: emailDelivery.sent || process.env.NODE_ENV === "production" ? "" : verificationUrl,
       },
       201
     );
