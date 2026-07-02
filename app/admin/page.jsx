@@ -79,6 +79,13 @@ export default function AdminDashboard() {
       const nextOrders = data.orders || [];
       const nextTickets = data.supportTickets || [];
       const nextWalletTransactions = data.walletTransactions || [];
+      const fallbackStats = {
+        totalUsers: nextUsers.length,
+        orderRequests: nextOrders.length,
+        pendingReview: nextOrders.filter((order) => order.status === "Pending Review").length,
+        openSupport: nextTickets.filter((ticket) => ticket.status !== "Closed").length,
+        walletRecords: nextWalletTransactions.length,
+      };
       const nextSignature = nextTickets.map((ticket) => `${ticket.id}:${ticket.status}:${ticket.updatedAt}:${ticket.messages?.length || 0}`).join("|");
       if (supportSignatureRef.current && supportSignatureRef.current !== nextSignature) {
         setNotification("Support notification: a ticket was created, updated, closed, reopened, or received a new message.");
@@ -88,7 +95,7 @@ export default function AdminDashboard() {
       setOrders(nextOrders);
       setSupportTickets(nextTickets);
       setWalletTransactions(nextWalletTransactions);
-      setStats(data.stats || null);
+      setStats({ ...fallbackStats, ...(data.stats || {}) });
       setCurrentAdmin(data.currentAdmin || null);
       setPermissions(data.permissions || {});
       setSelectedSupportTicketId((currentId) => {
@@ -102,7 +109,7 @@ export default function AdminDashboard() {
     } catch (requestError) {
       const status = await getBackendStatus().catch(() => ({ mode: "unknown" }));
       setBackendMode(status.mode);
-      setStats(null);
+      setStats({ totalUsers: 0, orderRequests: 0, pendingReview: 0, openSupport: 0, walletRecords: 0 });
       setError(requestError.message);
     }
   };
@@ -162,7 +169,7 @@ export default function AdminDashboard() {
     });
   };
 
-  const statsReady = Boolean(stats);
+  const statsReady = stats !== null;
   const pendingCount = statsReady ? Number(stats.pendingReview) : null;
   const openSupportCount = statsReady ? Number(stats.openSupport) : null;
   const totalUsersCount = statsReady ? Number(stats.totalUsers) : null;
