@@ -1,6 +1,6 @@
 import { createPaymentDeposit, updatePaymentDepositStatus } from "../../../../../lib/server/db";
 import { getCurrentUserFromRequest, json, unauthorized } from "../../../../../lib/server/http";
-import { CURRENCIES, toRwf } from "../../../../../lib/catalog";
+import { CURRENCIES, MINIMUM_DEPOSIT_RWF, toRwf } from "../../../../../lib/catalog";
 import { initiatePawaPayPaymentPage } from "../../../../../lib/server/pawapay";
 
 const supportedPawaPayCountries = new Set(["BEN", "CIV", "CMR", "COD", "COG", "GAB", "KEN", "RWA", "SEN", "SLE", "UGA", "ZMB"]);
@@ -49,6 +49,9 @@ export async function POST(request) {
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     return json({ error: "Funding amount must be greater than zero." }, 400);
+  }
+  if (toRwf(amount, currency) < MINIMUM_DEPOSIT_RWF) {
+    return json({ error: `Minimum deposit is ${MINIMUM_DEPOSIT_RWF} RWF.` }, 400);
   }
 
   let deposit = null;

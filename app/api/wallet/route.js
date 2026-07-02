@@ -1,4 +1,4 @@
-import { CURRENCIES, toRwf } from "../../../lib/catalog";
+import { CURRENCIES, MINIMUM_DEPOSIT_RWF, toRwf } from "../../../lib/catalog";
 import { createPaymentDeposit, listPaymentDepositsForUser, listWalletTransactions, updatePaymentDepositStatus } from "../../../lib/server/db";
 import { json, getCurrentUserFromRequest, unauthorized } from "../../../lib/server/http";
 import { initiatePawaPayDeposit, pawaPayStatus, predictPawaPayProvider } from "../../../lib/server/pawapay";
@@ -41,6 +41,9 @@ export async function POST(request) {
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     return json({ error: "Funding amount must be greater than zero." }, 400);
+  }
+  if (toRwf(amount, currency) < MINIMUM_DEPOSIT_RWF) {
+    return json({ error: `Minimum deposit is ${MINIMUM_DEPOSIT_RWF} RWF.` }, 400);
   }
   if (!phoneNumber) {
     return json({ error: "Mobile money phone number is required for PawaPay." }, 400);
