@@ -50,6 +50,7 @@ export default function AdminDashboard() {
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [selectedSupportTicketId, setSelectedSupportTicketId] = useState("");
+  const [isTicketViewerOpen, setIsTicketViewerOpen] = useState(false);
   const [supportReply, setSupportReply] = useState("");
   const [supportMessage, setSupportMessage] = useState("");
   const [backendMode, setBackendMode] = useState("checking");
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
   const [confirmation, setConfirmation] = useState(null);
   const [notification, setNotification] = useState("");
   const supportSignatureRef = useRef("");
+  const ticketViewerRef = useRef(null);
 
   const refresh = async () => {
     try {
@@ -169,8 +171,15 @@ export default function AdminDashboard() {
   const statValue = (value) => (value === null || Number.isNaN(value) ? "Loading" : value);
   const canManageUsers = Boolean(permissions.canManageUsers);
   const selectedSupportTicket = useMemo(() => {
-    return supportTickets.find((ticket) => ticket.id === selectedSupportTicketId) || supportTickets[0] || null;
+    return supportTickets.find((ticket) => ticket.id === selectedSupportTicketId) || null;
   }, [supportTickets, selectedSupportTicketId]);
+
+  const viewSupportTicket = (ticketId) => {
+    setSelectedSupportTicketId(ticketId);
+    setIsTicketViewerOpen(true);
+    setSupportMessage("");
+    setTimeout(() => ticketViewerRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+  };
 
   const setSupportStatus = async (ticketId, status) => {
     requestSave("Save this ticket status change?", async () => {
@@ -419,7 +428,7 @@ export default function AdminDashboard() {
                       </td>
                       <td>{formatDate(ticket.createdAt)}</td>
                       <td>
-                        <button className="btn btn-light" type="button" onClick={() => setSelectedSupportTicketId(ticket.id)}>
+                        <button className="btn btn-light" type="button" onClick={() => viewSupportTicket(ticket.id)}>
                           View Ticket
                         </button>
                       </td>
@@ -435,7 +444,7 @@ export default function AdminDashboard() {
           </div>
         </article>
 
-        <article className="panel-card">
+        <article className={`panel-card ticket-viewer-panel ${isTicketViewerOpen ? "open" : ""}`} ref={ticketViewerRef}>
           <div className="panel-heading">
             <div>
               <span className="eyebrow">Admin reply</span>
@@ -450,8 +459,13 @@ export default function AdminDashboard() {
           {selectedSupportTicket ? (
             <>
               <div className="ticket-summary">
-                <strong>{selectedSupportTicket.ticketId}</strong>
-                <span>{selectedSupportTicket.orderId ? `Order ${selectedSupportTicket.orderId}` : selectedSupportTicket.subject}</span>
+                <div>
+                  <strong>{selectedSupportTicket.ticketId}</strong>
+                  <span>{selectedSupportTicket.orderId ? `Order ${selectedSupportTicket.orderId}` : selectedSupportTicket.subject}</span>
+                </div>
+                <button className="inline-action" type="button" onClick={() => setIsTicketViewerOpen(false)}>
+                  Close
+                </button>
               </div>
               <div className="support-thread">
                 {selectedSupportTicket.messages.map((item) => (

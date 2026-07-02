@@ -1053,6 +1053,24 @@ td strong {
   color: var(--ink);
 }
 
+.ticket-viewer-panel {
+  display: none;
+}
+
+.ticket-viewer-panel.open {
+  display: block;
+}
+
+.ticket-viewer-panel .ticket-summary {
+  gap: 12px;
+}
+
+.ticket-viewer-panel .ticket-summary > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
 .support-thread {
   display: grid;
   max-height: 360px;
