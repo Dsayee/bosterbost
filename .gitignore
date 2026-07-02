@@ -1,0 +1,25 @@
+node_modules/
+.next/
+.open-next/
+.wrangler/
+.pnpm-store/
+data/
+*.log
+.env.local
+secrets/
+
+# Local/legacy static files from the first prototype. These must not override the Next.js app on Cloudflare.
+.codex-static-server.mjs
+admin.html
+app-core.js
+dashboard.css
+dashboard.html
+dashboard.js
+index.html
+script.js
+styles.css
+
+# Local exports and scratch files with possible private user data.
+cloudflare-d1-data.sql
+cookies.txt
+q-dev-chat-*.md
