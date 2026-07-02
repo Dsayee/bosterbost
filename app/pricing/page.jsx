@@ -1,15 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import PublicHeader from "../../components/PublicHeader";
 import { CURRENCIES, SERVICE_CATALOG, formatMoney, fromRwf } from "../../lib/catalog";
 
 const baseService = SERVICE_CATALOG.find((service) => service.id === "cheap-001") || SERVICE_CATALOG[0];
 const premiumService = SERVICE_CATALOG.find((service) => service.id === "speed-001") || SERVICE_CATALOG[0];
+const currencyStorageKey = "boster-bost-currency";
 
 export default function PricingPage() {
   const [currency, setCurrency] = useState("RWF");
+
+  useEffect(() => {
+    const savedCurrency = window.localStorage.getItem(currencyStorageKey);
+    if (savedCurrency && CURRENCIES[savedCurrency]) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!CURRENCIES[currency]) return;
+    window.localStorage.setItem(currencyStorageKey, currency);
+  }, [currency]);
 
   return (
     <>

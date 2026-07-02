@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import PublicHeader from "../../components/PublicHeader";
 import { CURRENCIES, SERVICE_CATALOG, SERVICE_PLATFORMS, formatMoney, fromRwf } from "../../lib/catalog";
+
+const currencyStorageKey = "boster-bost-currency";
 
 export default function ServicesPage() {
   const [currency, setCurrency] = useState("RWF");
@@ -12,6 +14,18 @@ export default function ServicesPage() {
   const services = useMemo(() => {
     return SERVICE_CATALOG.filter((service) => service.platform === selectedPlatform);
   }, [selectedPlatform]);
+
+  useEffect(() => {
+    const savedCurrency = window.localStorage.getItem(currencyStorageKey);
+    if (savedCurrency && CURRENCIES[savedCurrency]) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!CURRENCIES[currency]) return;
+    window.localStorage.setItem(currencyStorageKey, currency);
+  }, [currency]);
 
   return (
     <>

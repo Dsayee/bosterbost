@@ -31,6 +31,8 @@ const sectionPaths = {
   support: "/dashboard/support",
 };
 
+const currencyStorageKey = "boster-bost-currency";
+
 const pawaPayCountries = [
   { code: "RWA", label: "Rwanda" },
   { code: "KEN", label: "Kenya" },
@@ -221,6 +223,19 @@ export function CustomerDashboard({ initialSection = "overview" }) {
     const sync = setInterval(refresh, 10000);
     return () => clearInterval(sync);
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const savedCurrency = window.localStorage.getItem(currencyStorageKey);
+    if (savedCurrency && CURRENCIES[savedCurrency]) {
+      setCurrency(savedCurrency);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !CURRENCIES[currency]) return;
+    window.localStorage.setItem(currencyStorageKey, currency);
+  }, [currency]);
 
   useEffect(() => {
     setActiveSection(initialSection);
