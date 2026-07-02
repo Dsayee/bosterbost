@@ -30,6 +30,13 @@ const adminSections = [
   { id: "finance", label: "Finance Reports" },
   { id: "users", label: "Users & Access" },
 ];
+const emptyStats = {
+  totalUsers: 0,
+  orderRequests: 0,
+  pendingReview: 0,
+  openSupport: 0,
+  walletRecords: 0,
+};
 const rwfMoney = (value) => `${Number(value).toFixed(4)} RWF`;
 const formatDate = (isoDate) => {
   return new Intl.DateTimeFormat("en", {
@@ -46,7 +53,7 @@ export default function AdminDashboard() {
   const [orders, setOrders] = useState([]);
   const [supportTickets, setSupportTickets] = useState([]);
   const [walletTransactions, setWalletTransactions] = useState([]);
-  const [stats, setStats] = useState(null);
+  const [stats, setStats] = useState(emptyStats);
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [selectedSupportTicketId, setSelectedSupportTicketId] = useState("");
@@ -95,7 +102,7 @@ export default function AdminDashboard() {
       setOrders(nextOrders);
       setSupportTickets(nextTickets);
       setWalletTransactions(nextWalletTransactions);
-      setStats({ ...fallbackStats, ...(data.stats || {}) });
+      setStats({ ...emptyStats, ...fallbackStats, ...(data.stats || {}) });
       setCurrentAdmin(data.currentAdmin || null);
       setPermissions(data.permissions || {});
       setSelectedSupportTicketId((currentId) => {
@@ -109,7 +116,7 @@ export default function AdminDashboard() {
     } catch (requestError) {
       const status = await getBackendStatus().catch(() => ({ mode: "unknown" }));
       setBackendMode(status.mode);
-      setStats({ totalUsers: 0, orderRequests: 0, pendingReview: 0, openSupport: 0, walletRecords: 0 });
+      setStats(emptyStats);
       setError(requestError.message);
     }
   };
@@ -169,13 +176,13 @@ export default function AdminDashboard() {
     });
   };
 
-  const statsReady = stats !== null;
-  const pendingCount = statsReady ? Number(stats.pendingReview) : null;
-  const openSupportCount = statsReady ? Number(stats.openSupport) : null;
-  const totalUsersCount = statsReady ? Number(stats.totalUsers) : null;
-  const orderRequestsCount = statsReady ? Number(stats.orderRequests) : null;
-  const walletRecordsCount = statsReady ? Number(stats.walletRecords) : null;
-  const statValue = (value) => (value === null || Number.isNaN(value) ? "Loading" : value);
+  const safeCount = (value) => (Number.isFinite(Number(value)) ? Number(value) : 0);
+  const pendingCount = safeCount(stats.pendingReview);
+  const openSupportCount = safeCount(stats.openSupport);
+  const totalUsersCount = safeCount(stats.totalUsers);
+  const orderRequestsCount = safeCount(stats.orderRequests);
+  const walletRecordsCount = safeCount(stats.walletRecords);
+  const statValue = (value) => safeCount(value).toLocaleString();
   const canManageUsers = Boolean(permissions.canManageUsers);
   const selectedSupportTicket = useMemo(() => {
     return supportTickets.find((ticket) => ticket.id === selectedSupportTicketId) || null;
