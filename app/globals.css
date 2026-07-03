@@ -632,6 +632,44 @@ h3 {
   gap: 10px;
 }
 
+.sidebar-actions {
+  display: grid;
+  gap: 8px;
+  margin: -18px 0 18px;
+}
+
+.sidebar-actions .language-selector,
+.sidebar-actions .currency-switcher {
+  display: grid;
+  width: 100%;
+  gap: 4px;
+  color: #d9e1ec;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.sidebar-actions .language-selector select,
+.sidebar-actions .currency-switcher select {
+  width: 100%;
+  min-height: 36px;
+  border-color: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 0.82rem;
+}
+
+.sidebar-actions .language-selector select option,
+.sidebar-actions .currency-switcher select option {
+  color: var(--ink);
+}
+
+.sidebar-actions .btn {
+  width: 100%;
+  min-height: 36px;
+  padding: 8px 10px;
+  font-size: 0.82rem;
+}
+
 .currency-switcher {
   display: inline-grid;
   gap: 4px;
@@ -660,7 +698,8 @@ h3 {
 .portal-welcome h2 {
   max-width: 720px;
   margin-bottom: 10px;
-  font-size: clamp(1.8rem, 3vw, 2.6rem);
+  font-size: 1.1rem;
+  line-height: 1.35;
 }
 
 .portal-welcome p {
@@ -672,6 +711,10 @@ h3 {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.portal-welcome .portal-menu {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
 .portal-menu button {
@@ -1189,6 +1232,10 @@ td strong {
     display: grid;
   }
 
+  .sidebar-actions {
+    margin: 14px 0 12px;
+  }
+
   .app-sidebar nav {
     display: none;
     margin-top: 14px;
@@ -1276,6 +1323,10 @@ td strong {
   .feature-grid,
   .portal-menu {
     grid-template-columns: 1fr;
+  }
+
+  .portal-welcome .portal-menu {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .filter-row label,
@@ -1923,6 +1974,10 @@ td strong {
   }
 
   .portal-menu {
+    grid-template-columns: 1fr;
+  }
+
+  .portal-welcome .portal-menu {
     grid-template-columns: 1fr;
   }
 

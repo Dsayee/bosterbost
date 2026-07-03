@@ -29,6 +29,10 @@ export default function DashboardShell({ title, eyebrow, active, actions, showAd
             <span></span>
           </button>
         </div>
+        <div className="sidebar-actions">
+          <LanguageSelector />
+          {actions}
+        </div>
         <nav className={isMenuOpen ? "open" : ""} aria-label="Dashboard navigation" onClick={() => setIsMenuOpen(false)}>
           <Link className={active === "customer" ? "active" : ""} href="/dashboard">
             Overview
@@ -57,10 +61,6 @@ export default function DashboardShell({ title, eyebrow, active, actions, showAd
             <span className="eyebrow">{eyebrow}</span>
             <h1>{title}</h1>
             {userName ? <p className="signed-in-user">Signed in as {userName}</p> : null}
-          </div>
-          <div className="topbar-actions">
-            <LanguageSelector />
-            {actions}
           </div>
         </header>
         {children}

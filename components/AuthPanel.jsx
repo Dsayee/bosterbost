@@ -36,7 +36,7 @@ export default function AuthPanel() {
     const payload = {
       name: String(formData.get("name")),
       email: String(formData.get("email")),
-      role: String(formData.get("role")),
+      role: "Influencer",
       password: String(formData.get("password")),
     };
 
@@ -119,15 +119,6 @@ export default function AuthPanel() {
           <label>
             Email address
             <input type="email" name="email" autoComplete="email" placeholder="you@example.com" required />
-          </label>
-          <label>
-            Account type
-            <select name="role" required>
-              <option value="Influencer">Influencer</option>
-              <option value="Brand">Brand</option>
-              <option value="Reseller">Reseller</option>
-              <option value="Agency">Agency</option>
-            </select>
           </label>
           <label>
             Password
