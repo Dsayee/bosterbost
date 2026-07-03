@@ -960,6 +960,27 @@ h3 {
   font-weight: 900;
 }
 
+.manual-deposit-alert {
+  display: grid;
+  gap: 8px;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius);
+  background: #fff7ed;
+  color: #7c2d12;
+  padding: 12px;
+  font-weight: 800;
+}
+
+.manual-deposit-alert p {
+  margin: 0;
+}
+
+.manual-deposit-alert a {
+  color: #07504a;
+  font-weight: 900;
+  text-decoration: underline;
+}
+
 .table-wrap {
   overflow-x: auto;
   border: 1px solid var(--line);

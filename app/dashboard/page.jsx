@@ -15,7 +15,19 @@ import {
   replySupportTicket,
   submitOrder,
 } from "../../lib/api";
-import { CURRENCIES, MINIMUM_DEPOSIT_RWF, SERVICE_CATALOG, SERVICE_PLATFORMS, findService, formatMoney, fromRwf } from "../../lib/catalog";
+import {
+  CURRENCIES,
+  MANUAL_DEPOSIT_WHATSAPP,
+  MANUAL_DEPOSIT_WHATSAPP_URL,
+  MINIMUM_DEPOSIT_RWF,
+  PAWAPAY_COUNTRY_BY_CURRENCY,
+  PAYMENT_NOT_AVAILABLE_MESSAGE,
+  SERVICE_CATALOG,
+  SERVICE_PLATFORMS,
+  findService,
+  formatMoney,
+  fromRwf,
+} from "../../lib/catalog";
 
 const portalSections = [
   { id: "overview", label: "Overview" },
@@ -68,6 +80,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const [paymentDeposits, setPaymentDeposits] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [currency, setCurrency] = useState("RWF");
+  const [depositCurrency, setDepositCurrency] = useState("RWF");
   const [selectedPlatform, setSelectedPlatform] = useState(SERVICE_PLATFORMS[0]);
   const [selectedModule, setSelectedModule] = useState(SERVICE_CATALOG[0].module);
   const [serviceId, setServiceId] = useState(SERVICE_CATALOG[0].id);
@@ -122,6 +135,8 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const displayEstimate = formatMoney(fromRwf(estimateRwf, currency), currency);
   const displayWallet = formatMoney(fromRwf(user?.walletRwf || 0, currency), currency);
   const minimumDepositLabel = formatMoney(MINIMUM_DEPOSIT_RWF, "RWF");
+  const depositCountry = PAWAPAY_COUNTRY_BY_CURRENCY[depositCurrency] || null;
+  const manualDepositMessage = `${PAYMENT_NOT_AVAILABLE_MESSAGE} ${MANUAL_DEPOSIT_WHATSAPP}`;
   const filteredSupportTickets = useMemo(() => {
     const orderQuery = supportOrderFilter.trim().toLowerCase();
     return supportTickets.filter((ticket) => {
@@ -224,6 +239,12 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   }, [currency]);
 
   useEffect(() => {
+    if (CURRENCIES[currency]) {
+      setDepositCurrency(currency);
+    }
+  }, [currency]);
+
+  useEffect(() => {
     setActiveSection(initialSection);
   }, [initialSection]);
 
@@ -266,6 +287,11 @@ export function CustomerDashboard({ initialSection = "overview" }) {
     const amount = Number(amountValue);
     const depositCurrency = String(formData.get("currency"));
     const minimumAmount = fromRwf(MINIMUM_DEPOSIT_RWF, depositCurrency);
+
+    if (!PAWAPAY_COUNTRY_BY_CURRENCY[depositCurrency]) {
+      setFundMessage(manualDepositMessage);
+      return;
+    }
 
     if (!amountValue || !Number.isFinite(amount) || amount <= 0) {
       setFundMessage("Please enter a valid amount.");
@@ -564,7 +590,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                 </label>
                 <label>
                   Currency
-                  <select name="currency" defaultValue={currency}>
+                  <select name="currency" value={depositCurrency} onChange={(event) => setDepositCurrency(event.target.value)}>
                     {Object.keys(CURRENCIES).map((code) => (
                       <option key={code} value={code}>
                         {code} - {CURRENCIES[code].label}
@@ -572,6 +598,18 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                     ))}
                   </select>
                 </label>
+                <label>
+                  Country
+                  <input value={depositCountry ? depositCountry.label : "Not available"} readOnly />
+                </label>
+                {!depositCountry ? (
+                  <div className="manual-deposit-alert full-field">
+                    <p>{manualDepositMessage}</p>
+                    <a href={MANUAL_DEPOSIT_WHATSAPP_URL} target="_blank" rel="noreferrer">
+                      WhatsApp {MANUAL_DEPOSIT_WHATSAPP}
+                    </a>
+                  </div>
+                ) : null}
                 <button className="btn btn-primary full-field" type="submit">
                   Continue to PawaPay Secure Payment
                 </button>

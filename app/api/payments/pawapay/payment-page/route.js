@@ -1,21 +1,14 @@
 import { createPaymentDeposit, updatePaymentDepositStatus } from "../../../../../lib/server/db";
 import { getCurrentUserFromRequest, json, unauthorized } from "../../../../../lib/server/http";
-import { CURRENCIES, MINIMUM_DEPOSIT_RWF, toRwf } from "../../../../../lib/catalog";
+import {
+  CURRENCIES,
+  MANUAL_DEPOSIT_WHATSAPP,
+  MINIMUM_DEPOSIT_RWF,
+  PAWAPAY_COUNTRY_BY_CURRENCY,
+  PAYMENT_NOT_AVAILABLE_MESSAGE,
+  toRwf,
+} from "../../../../../lib/catalog";
 import { initiatePawaPayPaymentPage } from "../../../../../lib/server/pawapay";
-
-const supportedPawaPayCountries = new Set(["BEN", "CIV", "CMR", "COD", "COG", "GAB", "KEN", "RWA", "SEN", "SLE", "UGA", "ZMB"]);
-
-const defaultCountryForCurrency = {
-  RWF: "RWA",
-  KES: "KEN",
-  UGX: "UGA",
-  ZMW: "ZMB",
-  SLE: "SLE",
-  CDF: "COD",
-  XOF: "SEN",
-  XAF: "CMR",
-  USD: "COD",
-};
 
 const appBaseUrl = (request) => (process.env.NEXT_PUBLIC_APP_URL || new URL(request.url).origin).replace(/\/$/, "");
 
@@ -37,15 +30,13 @@ export async function POST(request) {
   const body = await request.json();
   const amount = Number(body.amount);
   const currency = String(body.currency || "RWF").toUpperCase();
-  const phoneNumber = String(body.phoneNumber || "").trim();
-  const requestedCountry = String(body.country || "").toUpperCase();
-  const country = requestedCountry || defaultCountryForCurrency[currency] || "RWA";
+  const country = PAWAPAY_COUNTRY_BY_CURRENCY[currency] || null;
 
   if (!CURRENCIES[currency]) {
     return json({ error: "Unsupported currency." }, 400);
   }
-  if (!supportedPawaPayCountries.has(country)) {
-    return json({ error: "Unsupported PawaPay payment country." }, 400);
+  if (!country) {
+    return json({ error: `${PAYMENT_NOT_AVAILABLE_MESSAGE} ${MANUAL_DEPOSIT_WHATSAPP}` }, 400);
   }
   if (!Number.isFinite(amount) || amount <= 0) {
     return json({ error: "Funding amount must be greater than zero." }, 400);
@@ -61,8 +52,8 @@ export async function POST(request) {
       amountRwf: toRwf(amount, currency),
       originalAmount: amount,
       originalCurrency: currency,
-      payerPhone: phoneNumber,
-      payerProvider: country,
+      payerPhone: "",
+      payerProvider: country.code,
     });
 
     const returnUrl = `${appBaseUrl(request)}/dashboard/wallet?payment=pawapay&depositId=${encodeURIComponent(deposit.providerDepositId)}`;
@@ -70,8 +61,7 @@ export async function POST(request) {
       depositId: deposit.providerDepositId,
       amount,
       currency,
-      country,
-      phoneNumber,
+      country: country.code,
       userId: user.id,
       userEmail: user.email,
       returnUrl,
