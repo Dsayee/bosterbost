@@ -37,6 +37,12 @@ export default function ContactPage() {
                 <p>Interested in bulk pricing, white-label workflows, or API access? Register and reach out via the support system.</p>
                 <Link className="btn btn-secondary" href="/api-info">API Info</Link>
               </article>
+              <article className="feature-card">
+                <div className="feature-icon-lg">@</div>
+                <h3>Email Contact</h3>
+                <p>For business, account, and partnership questions, contact the Boster Bost team by email.</p>
+                <a className="btn btn-secondary" href="mailto:info@bosterbost.com">info@bosterbost.com</a>
+              </article>
             </div>
           </div>
         </section>
@@ -67,6 +73,7 @@ export default function ContactPage() {
               <strong>Company</strong>
               <Link href="/faq">FAQ</Link>
               <Link href="/contact">Contact</Link>
+              <a href="mailto:info@bosterbost.com">info@bosterbost.com</a>
             </div>
           </div>
         </div>

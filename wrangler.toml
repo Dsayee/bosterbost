@@ -11,16 +11,20 @@ binding = "ASSETS"
 DATABASE_PROVIDER = "cloudflare-d1"
 CLOUDFLARE_ACCOUNT_ID = "a42b60a6c5b64ba1571e6d185906a761"
 CLOUDFLARE_D1_DATABASE_ID = "80a3a3d7-9584-42f6-8482-46f5fceaa2aa"
-NEXT_PUBLIC_APP_URL = "https://bosterbost.darlingtonsayee.com"
-BREVO_FROM = "Boster Bost <darlington@darlingtonsayee.com>"
+NEXT_PUBLIC_APP_URL = "https://bosterbost.com"
+BREVO_FROM = "Boster Bost <info@bosterbost.com>"
 SMTP_HOST = "smtp-relay.brevo.com"
 SMTP_PORT = "587"
-SMTP_FROM = "Boster Bost <darlington@darlingtonsayee.com>"
+SMTP_FROM = "Boster Bost <info@bosterbost.com>"
 PAWAPAY_ENV = "production"
 PAWAPAY_SIGNATURE_KEY_ID = "BOSTERBOST_EC_P256_KEY:1"
 
 [[routes]]
-pattern = "bosterbost.darlingtonsayee.com"
+pattern = "bosterbost.com"
+custom_domain = true
+
+[[routes]]
+pattern = "www.bosterbost.com"
 custom_domain = true
 
 [[d1_databases]]

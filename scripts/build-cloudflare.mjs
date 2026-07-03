@@ -129,7 +129,7 @@ try {
   const env = {
     ...process.env,
     DATABASE_PROVIDER: "cloudflare-d1",
-    NEXT_PUBLIC_APP_URL: "https://bosterbost.darlingtonsayee.com",
+    NEXT_PUBLIC_APP_URL: "https://bosterbost.com",
     CLOUDFLARE_ACCOUNT_ID: "a42b60a6c5b64ba1571e6d185906a761",
     CLOUDFLARE_D1_DATABASE_ID: "80a3a3d7-9584-42f6-8482-46f5fceaa2aa",
     PATH: `${resolve(cwd, "scripts")};${process.env.PATH || ""}`,

@@ -200,6 +200,7 @@ export default function HomePage() {
               <strong>Company</strong>
               <Link href="/faq">FAQ</Link>
               <Link href="/contact">Contact</Link>
+              <a href="mailto:info@bosterbost.com">info@bosterbost.com</a>
             </div>
           </div>
         </div>
