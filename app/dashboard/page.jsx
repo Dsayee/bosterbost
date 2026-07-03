@@ -447,6 +447,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       actions={actions}
       showAdmin={user?.isAdmin}
       userName={user?.name}
+      hideTitle
     >
       {isLoading ? (
         <section className="panel-card">

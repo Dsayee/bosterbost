@@ -5,7 +5,7 @@ import { useState } from "react";
 import DashboardTranslator from "./DashboardTranslator";
 import LanguageSelector from "./LanguageSelector";
 
-export default function DashboardShell({ title, eyebrow, active, actions, showAdmin = false, userName = "", children }) {
+export default function DashboardShell({ title, eyebrow, active, actions, showAdmin = false, userName = "", hideTitle = false, children }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -58,9 +58,13 @@ export default function DashboardShell({ title, eyebrow, active, actions, showAd
       <main className="app-main">
         <header className="app-topbar">
           <div>
-            <span className="eyebrow">{eyebrow}</span>
-            <h1>{title}</h1>
-            {userName ? <p className="signed-in-user">Signed in as {userName}</p> : null}
+            {!hideTitle ? (
+              <>
+                <span className="eyebrow">{eyebrow}</span>
+                <h1>{title}</h1>
+              </>
+            ) : null}
+            {userName ? <p className={`signed-in-user ${hideTitle ? "compact-user" : ""}`}>Signed in as {userName}</p> : null}
           </div>
         </header>
         {children}

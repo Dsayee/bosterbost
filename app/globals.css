@@ -625,6 +625,10 @@ h3 {
   font-weight: 800;
 }
 
+.signed-in-user.compact-user {
+  margin-top: 0;
+}
+
 .topbar-actions {
   display: flex;
   flex-wrap: wrap;
