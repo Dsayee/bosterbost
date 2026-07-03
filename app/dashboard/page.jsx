@@ -33,21 +33,6 @@ const sectionPaths = {
 
 const currencyStorageKey = "boster-bost-currency";
 
-const pawaPayCountries = [
-  { code: "RWA", label: "Rwanda" },
-  { code: "KEN", label: "Kenya" },
-  { code: "UGA", label: "Uganda" },
-  { code: "COD", label: "DR Congo" },
-  { code: "ZMB", label: "Zambia" },
-  { code: "SEN", label: "Senegal" },
-  { code: "BEN", label: "Benin" },
-  { code: "CIV", label: "Ivory Coast" },
-  { code: "CMR", label: "Cameroon" },
-  { code: "COG", label: "Congo" },
-  { code: "GAB", label: "Gabon" },
-  { code: "SLE", label: "Sierra Leone" },
-];
-
 const formatDate = (isoDate) => {
   return new Intl.DateTimeFormat("en", {
     month: "short",
@@ -86,7 +71,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const [selectedPlatform, setSelectedPlatform] = useState(SERVICE_PLATFORMS[0]);
   const [selectedModule, setSelectedModule] = useState(SERVICE_CATALOG[0].module);
   const [serviceId, setServiceId] = useState(SERVICE_CATALOG[0].id);
-  const [quantity, setQuantity] = useState(100);
+  const [quantity, setQuantity] = useState("");
   const [message, setMessage] = useState("");
   const [fundMessage, setFundMessage] = useState("");
   const [pendingDepositId, setPendingDepositId] = useState("");
@@ -269,14 +254,6 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   }, [platformServices, services, serviceId]);
 
   useEffect(() => {
-    const currentQuantity = Number(quantity || 0);
-    if (quantity === "") return;
-    if (currentQuantity < selectedServiceMin || currentQuantity > selectedServiceMax) {
-      setQuantity(selectedServiceMin);
-    }
-  }, [selectedServiceMin, selectedServiceMax, quantity]);
-
-  useEffect(() => {
     if (selectedTicketId && filteredSupportTickets.some((ticket) => ticket.id === selectedTicketId)) return;
     setSelectedTicketId(filteredSupportTickets[0]?.id || "");
   }, [filteredSupportTickets, selectedTicketId]);
@@ -285,12 +262,23 @@ export function CustomerDashboard({ initialSection = "overview" }) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const amount = Number(formData.get("amount"));
+    const amountValue = String(formData.get("amount") || "").trim();
+    const amount = Number(amountValue);
     const depositCurrency = String(formData.get("currency"));
     const minimumAmount = fromRwf(MINIMUM_DEPOSIT_RWF, depositCurrency);
 
-    if (!Number.isFinite(amount) || amount < minimumAmount) {
-      setFundMessage(`Minimum deposit is ${formatMoney(minimumAmount, depositCurrency)}.`);
+    if (!amountValue || !Number.isFinite(amount) || amount <= 0) {
+      setFundMessage("Please enter a valid amount.");
+      return;
+    }
+
+    if (amount < minimumAmount) {
+      setFundMessage(
+        `Minimum order for ${depositCurrency} is ${formatMoney(minimumAmount, depositCurrency)}. Please enter an amount greater than or equal to ${formatMoney(
+          minimumAmount,
+          depositCurrency
+        )}.`
+      );
       return;
     }
 
@@ -299,8 +287,6 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       const result = await initiatePawaPayPaymentPage({
         amount,
         currency: depositCurrency,
-        phoneNumber: String(formData.get("phoneNumber") || "").trim(),
-        country: String(formData.get("country") || "RWA"),
       });
       if (!result.redirectUrl) {
         throw new Error("PawaPay did not return a secure checkout link.");
@@ -328,13 +314,14 @@ export function CustomerDashboard({ initialSection = "overview" }) {
 
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const orderQuantity = Number(formData.get("quantity"));
+    const quantityValue = String(formData.get("quantity") || "").trim();
+    const orderQuantity = Number(quantityValue);
 
     const requestedService = findService(String(formData.get("serviceId") || ""));
     const minQuantity = requestedService?.min || 100;
     const maxQuantity = requestedService?.max || 2147483647;
 
-    if (!requestedService || orderQuantity < minQuantity || orderQuantity > maxQuantity) {
+    if (!requestedService || !quantityValue || !Number.isFinite(orderQuantity) || orderQuantity < minQuantity || orderQuantity > maxQuantity) {
       setMessage(`Quantity must be between ${minQuantity.toLocaleString()} and ${maxQuantity.toLocaleString()} for this service.`);
       return;
     }
@@ -349,7 +336,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       });
 
       form.reset();
-      setQuantity(selectedServiceMin);
+      setQuantity("");
       await refresh();
       setMessage(
         `Success. Order request ${order.orderId || order.id.slice(0, 8)} submitted and ${formatMoney(
@@ -572,8 +559,8 @@ export function CustomerDashboard({ initialSection = "overview" }) {
               </div>
               <form className="order-form" onSubmit={handleFunding}>
                 <label>
-                  Amount
-                  <input name="amount" type="number" min="0.01" step="any" placeholder={`Minimum ${minimumDepositLabel} equivalent`} required />
+                  Amount / Quantity
+                  <input name="amount" type="number" step="any" inputMode="decimal" placeholder={`Minimum ${minimumDepositLabel} equivalent`} required />
                 </label>
                 <label>
                   Currency
@@ -584,20 +571,6 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                       </option>
                     ))}
                   </select>
-                </label>
-                <label>
-                  Payment country
-                  <select name="country" defaultValue="RWA">
-                    {pawaPayCountries.map((country) => (
-                      <option key={country.code} value={country.code}>
-                        {country.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Phone number
-                  <input name="phoneNumber" type="tel" placeholder="Optional" />
                 </label>
                 <button className="btn btn-primary full-field" type="submit">
                   Continue to PawaPay Secure Payment
@@ -752,9 +725,8 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                   <input
                     name="quantity"
                     type="number"
-                    min={selectedServiceMin}
-                    max={selectedServiceMax}
-                    step="1"
+                    step="any"
+                    inputMode="decimal"
                     value={quantity}
                     onChange={(event) => setQuantity(event.target.value)}
                     onFocus={(event) => event.currentTarget.select()}
