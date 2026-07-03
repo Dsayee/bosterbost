@@ -134,7 +134,8 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const estimateRwf = (Number(quantity || 0) / 1000) * selectedService.priceRwf;
   const displayEstimate = formatMoney(fromRwf(estimateRwf, currency), currency);
   const displayWallet = formatMoney(fromRwf(user?.walletRwf || 0, currency), currency);
-  const minimumDepositLabel = formatMoney(MINIMUM_DEPOSIT_RWF, "RWF");
+  const minimumDepositAmount = fromRwf(MINIMUM_DEPOSIT_RWF, depositCurrency);
+  const minimumDepositLabel = formatMoney(minimumDepositAmount, depositCurrency);
   const depositCountry = PAWAPAY_COUNTRY_BY_CURRENCY[depositCurrency] || null;
   const manualDepositMessage = `${PAYMENT_NOT_AVAILABLE_MESSAGE} ${MANUAL_DEPOSIT_WHATSAPP}`;
   const filteredSupportTickets = useMemo(() => {
@@ -300,7 +301,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
 
     if (amount < minimumAmount) {
       setFundMessage(
-        `Minimum order for ${depositCurrency} is ${formatMoney(minimumAmount, depositCurrency)}. Please enter an amount greater than or equal to ${formatMoney(
+        `Minimum deposit for ${depositCurrency} is ${formatMoney(minimumAmount, depositCurrency)}. Please enter an amount greater than or equal to ${formatMoney(
           minimumAmount,
           depositCurrency
         )}.`
@@ -586,8 +587,8 @@ export function CustomerDashboard({ initialSection = "overview" }) {
               </div>
               <form className="order-form" onSubmit={handleFunding}>
                 <label>
-                  Amount / Quantity
-                  <input name="amount" type="number" step="any" inputMode="decimal" placeholder={`Minimum ${minimumDepositLabel} equivalent`} required />
+                  Amount
+                  <input name="amount" type="number" step="any" inputMode="decimal" placeholder={`Minimum ${minimumDepositLabel}`} required />
                 </label>
                 <label>
                   Currency
@@ -615,7 +616,6 @@ export function CustomerDashboard({ initialSection = "overview" }) {
                   Continue to PawaPay Secure Payment
                 </button>
               </form>
-              <p className="form-note">Minimum deposit: {minimumDepositLabel} or the same value in your selected currency.</p>
               <p className="form-message">
                 {fundMessage}
                 {pendingDepositId ? (
