@@ -37,6 +37,18 @@ const emptyStats = {
   openSupport: 0,
   walletRecords: 0,
 };
+const strongestStats = (apiStats = {}, fallbackStats = {}) => {
+  const nextStats = { ...emptyStats };
+  Object.keys(nextStats).forEach((key) => {
+    const apiValue = Number(apiStats?.[key]);
+    const fallbackValue = Number(fallbackStats?.[key]);
+    nextStats[key] = Math.max(
+      Number.isFinite(apiValue) ? apiValue : 0,
+      Number.isFinite(fallbackValue) ? fallbackValue : 0
+    );
+  });
+  return nextStats;
+};
 const rwfMoney = (value) => `${Number(value).toFixed(4)} RWF`;
 const formatDate = (isoDate) => {
   return new Intl.DateTimeFormat("en", {
@@ -102,7 +114,7 @@ export default function AdminDashboard() {
       setOrders(nextOrders);
       setSupportTickets(nextTickets);
       setWalletTransactions(nextWalletTransactions);
-      setStats({ ...emptyStats, ...fallbackStats, ...(data.stats || {}) });
+      setStats(strongestStats(data.stats, fallbackStats));
       setCurrentAdmin(data.currentAdmin || null);
       setPermissions(data.permissions || {});
       setSelectedSupportTicketId((currentId) => {
