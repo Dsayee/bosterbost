@@ -1201,11 +1201,11 @@ td strong {
   }
 
   .account-layout {
-    text-align: center;
+    text-align: left;
   }
 
   .account-layout .hero-text {
-    margin-inline: auto;
+    margin-inline: 0;
   }
 
   .pricing-grid,
