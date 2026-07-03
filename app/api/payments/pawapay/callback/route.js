@@ -12,6 +12,15 @@ const callbackAllowed = (request) => {
   );
 };
 
+export async function GET(request) {
+  return json({
+    ok: true,
+    provider: "pawapay",
+    callbackUrl: `${new URL(request.url).origin}/api/payments/pawapay/callback`,
+    method: "POST",
+  });
+}
+
 export async function POST(request) {
   if (!callbackAllowed(request)) {
     return json({ error: "Invalid callback secret." }, 401);

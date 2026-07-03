@@ -16,6 +16,7 @@ BREVO_FROM = "Boster Bost <info@bosterbost.com>"
 SMTP_HOST = "smtp-relay.brevo.com"
 SMTP_PORT = "587"
 SMTP_FROM = "Boster Bost <info@bosterbost.com>"
+GOOGLE_CLIENT_ID = "467625474800-dhukhek1ieeiuln2b08ecatt43ee5b6v.apps.googleusercontent.com"
 PAWAPAY_ENV = "production"
 PAWAPAY_SIGNATURE_KEY_ID = "BOSTERBOST_EC_P256_KEY:1"
 
