@@ -66,6 +66,7 @@ export default function AdminDashboard() {
   const [supportTickets, setSupportTickets] = useState([]);
   const [walletTransactions, setWalletTransactions] = useState([]);
   const [stats, setStats] = useState(emptyStats);
+  const [isStatsLoaded, setIsStatsLoaded] = useState(false);
   const [currentAdmin, setCurrentAdmin] = useState(null);
   const [permissions, setPermissions] = useState({});
   const [selectedSupportTicketId, setSelectedSupportTicketId] = useState("");
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
 
   const refresh = async () => {
     try {
-      const [data, status] = await Promise.all([getAdminData(), getBackendStatus()]);
+      const data = await getAdminData();
       const nextUsers = data.users || [];
       const nextOrders = data.orders || [];
       const nextTickets = data.supportTickets || [];
@@ -115,6 +116,7 @@ export default function AdminDashboard() {
       setSupportTickets(nextTickets);
       setWalletTransactions(nextWalletTransactions);
       setStats(strongestStats(data.stats, fallbackStats));
+      setIsStatsLoaded(true);
       setCurrentAdmin(data.currentAdmin || null);
       setPermissions(data.permissions || {});
       setSelectedSupportTicketId((currentId) => {
@@ -123,12 +125,13 @@ export default function AdminDashboard() {
         }
         return "";
       });
-      setBackendMode(status.mode);
       setError("");
+      getBackendStatus()
+        .then((status) => setBackendMode(status.mode))
+        .catch(() => setBackendMode("unknown"));
     } catch (requestError) {
       const status = await getBackendStatus().catch(() => ({ mode: "unknown" }));
       setBackendMode(status.mode);
-      setStats(emptyStats);
       setError(requestError.message);
     }
   };
@@ -194,7 +197,7 @@ export default function AdminDashboard() {
   const totalUsersCount = safeCount(stats.totalUsers);
   const orderRequestsCount = safeCount(stats.orderRequests);
   const walletRecordsCount = safeCount(stats.walletRecords);
-  const statValue = (value) => safeCount(value).toLocaleString();
+  const statValue = (value) => (isStatsLoaded ? safeCount(value).toLocaleString() : "Loading");
   const canManageUsers = Boolean(permissions.canManageUsers);
   const selectedSupportTicket = useMemo(() => {
     return supportTickets.find((ticket) => ticket.id === selectedSupportTicketId) || null;
