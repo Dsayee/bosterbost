@@ -1,6 +1,7 @@
 import { CURRENCIES, MINIMUM_DEPOSIT_RWF, toRwf } from "../../../lib/catalog";
-import { createPaymentDeposit, listPaymentDepositsForUser, listWalletTransactions, updatePaymentDepositStatus } from "../../../lib/server/db";
+import { createPaymentDeposit, getUserById, listPaymentDepositsForUser, listWalletTransactions, updatePaymentDepositStatus } from "../../../lib/server/db";
 import { json, getCurrentUserFromRequest, unauthorized } from "../../../lib/server/http";
+import { reconcilePendingPawaPayDeposits } from "../../../lib/server/payment-reconciliation";
 import { initiatePawaPayDeposit, pawaPayStatus, predictPawaPayProvider } from "../../../lib/server/pawapay";
 
 export async function GET() {
@@ -13,8 +14,11 @@ export async function GET() {
     return json({ error: "Please confirm your email address first." }, 403);
   }
 
+  await reconcilePendingPawaPayDeposits({ userId: user.id, limit: 10 }).catch(() => null);
+  const refreshedUser = (await getUserById(user.id)) || user;
+
   return json({
-    walletRwf: user.walletRwf,
+    walletRwf: refreshedUser.walletRwf,
     transactions: await listWalletTransactions(user.id),
     deposits: await listPaymentDepositsForUser(user.id),
   });

@@ -1,5 +1,6 @@
 import { getAdminDashboardStats, hasAdminAccess } from "../../../../lib/server/db";
 import { getCurrentUserFromRequest, json, unauthorized } from "../../../../lib/server/http";
+import { reconcilePendingPawaPayDeposits } from "../../../../lib/server/payment-reconciliation";
 
 const permissionsForUser = (user) => {
   const levels = user.accessLevels?.length ? user.accessLevels : [user.accessLevel];
@@ -25,6 +26,8 @@ export async function GET() {
   if (!hasAdminAccess(user)) {
     return json({ error: "Admin access required." }, 403);
   }
+
+  await reconcilePendingPawaPayDeposits({ limit: 20 }).catch(() => null);
 
   return json({
     currentAdmin: user,

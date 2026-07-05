@@ -1,5 +1,6 @@
 import { getAdminDashboardStats, hasAdminAccess } from "../../lib/server/db";
 import { getCurrentUserFromRequest } from "../../lib/server/http";
+import { reconcilePendingPawaPayDeposits } from "../../lib/server/payment-reconciliation";
 import AdminDashboardClient from "./AdminDashboardClient";
 
 export const dynamic = "force-dynamic";
@@ -27,6 +28,8 @@ export default async function AdminPage() {
   if (!canViewAdmin) {
     return <AdminDashboardClient />;
   }
+
+  await reconcilePendingPawaPayDeposits({ limit: 20 }).catch(() => null);
 
   return (
     <AdminDashboardClient
