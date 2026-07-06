@@ -72,6 +72,23 @@ const readAttachment = (file) =>
     reader.readAsDataURL(file);
   });
 
+const isSaferService = (service) => {
+  const text = `${service?.module || ""} ${service?.name || ""}`.toLowerCase();
+  return [
+    "high speed",
+    "high quality",
+    "non drop",
+    "no drop",
+    "non-drop",
+    "no-drop",
+    "refill",
+    "premium",
+    "real",
+    "lifetime",
+    "life time",
+  ].some((term) => text.includes(term));
+};
+
 export function CustomerDashboard({ initialSection = "overview" }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
@@ -101,6 +118,7 @@ export function CustomerDashboard({ initialSection = "overview" }) {
   const [supportView, setSupportView] = useState("new");
   const [notification, setNotification] = useState("");
   const [showWhatsappPrompt, setShowWhatsappPrompt] = useState(false);
+  const [orderWarning, setOrderWarning] = useState(null);
   const supportSignatureRef = useRef("");
 
   const openSection = (section, view = "") => {
@@ -335,6 +353,32 @@ export function CustomerDashboard({ initialSection = "overview" }) {
     }
   };
 
+  const placeOrder = async (form, formData, requestedService, orderQuantity) => {
+    try {
+      const { order } = await submitOrder({
+        serviceId: String(formData.get("serviceId")),
+        quantity: orderQuantity,
+        targetLink: String(formData.get("targetLink")),
+        deliveryMode: String(formData.get("deliveryMode")),
+        notes: String(formData.get("notes")).trim(),
+      });
+
+      form.reset();
+      setQuantity("");
+      setOrderWarning(null);
+      await refresh();
+      setMessage(
+        `Success. Order request ${order.orderId || order.id.slice(0, 8)} submitted and ${formatMoney(
+          fromRwf(order.cost, currency),
+          currency
+        )} deducted.`
+      );
+    } catch (error) {
+      setOrderWarning(null);
+      setMessage(error.message);
+    }
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (!user) return;
@@ -353,27 +397,15 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       return;
     }
 
-    try {
-      const { order } = await submitOrder({
-        serviceId: String(formData.get("serviceId")),
-        quantity: orderQuantity,
-        targetLink: String(formData.get("targetLink")),
-        deliveryMode: String(formData.get("deliveryMode")),
-        notes: String(formData.get("notes")).trim(),
+    if (!isSaferService(requestedService)) {
+      setOrderWarning({
+        serviceName: requestedService.name,
+        onContinue: () => placeOrder(form, formData, requestedService, orderQuantity),
       });
-
-      form.reset();
-      setQuantity("");
-      await refresh();
-      setMessage(
-        `Success. Order request ${order.orderId || order.id.slice(0, 8)} submitted and ${formatMoney(
-          fromRwf(order.cost, currency),
-          currency
-        )} deducted.`
-      );
-    } catch (error) {
-      setMessage(error.message);
+      return;
     }
+
+    await placeOrder(form, formData, requestedService, orderQuantity);
   };
 
   const handleSupportSubmit = async (event) => {
@@ -450,6 +482,30 @@ export function CustomerDashboard({ initialSection = "overview" }) {
       userName={user?.name}
       hideTitle
     >
+      {orderWarning ? (
+        <div className="modal-backdrop" role="presentation">
+          <div className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="order-risk-title">
+            <span className="eyebrow">Before you continue</span>
+            <h2 id="order-risk-title">This service may drop</h2>
+            <p>
+              This order might drop partly or massively. We advise you to choose a high quality or non-drop service to get real human
+              reactions that will not drop.
+            </p>
+            <p>
+              Selected service: <strong>{orderWarning.serviceName}</strong>
+            </p>
+            <div className="inline-actions">
+              <button className="btn btn-primary" type="button" onClick={orderWarning.onContinue}>
+                Continue Anyway
+              </button>
+              <button className="btn btn-secondary" type="button" onClick={() => setOrderWarning(null)}>
+                Choose Better Service
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {isLoading ? (
         <section className="panel-card">
           <span className="eyebrow">Checking session</span>
