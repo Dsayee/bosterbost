@@ -1123,6 +1123,29 @@ td strong {
   box-shadow: var(--shadow);
 }
 
+.warning-modal {
+  border-color: #dc2626;
+  border-width: 2px;
+  background: #fff5f5;
+}
+
+.warning-modal h2 {
+  color: #991b1b;
+}
+
+.warning-modal p {
+  color: #7f1d1d;
+}
+
+.warning-modal strong {
+  color: #991b1b;
+}
+
+.warning-label {
+  color: #dc2626;
+  font-weight: 1000;
+}
+
 .access-checklist {
   display: grid;
   gap: 8px;

@@ -484,11 +484,11 @@ export function CustomerDashboard({ initialSection = "overview" }) {
     >
       {orderWarning ? (
         <div className="modal-backdrop" role="presentation">
-          <div className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="order-risk-title">
-            <span className="eyebrow">Before you continue</span>
-            <h2 id="order-risk-title">This service may drop</h2>
+          <div className="confirm-modal warning-modal" role="dialog" aria-modal="true" aria-labelledby="order-risk-title">
+            <span className="eyebrow warning-label">WARNING!!</span>
+            <h2 id="order-risk-title">WARNING!! This service may drop</h2>
             <p>
-              This order might drop partly or massively. We advise you to choose a high quality or non-drop service to get real human
+              This order might drop partly or massively. We strongly advise you to choose a high quality or non-drop service to get real human
               reactions that will not drop.
             </p>
             <p>
